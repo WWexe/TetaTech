@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Table(name = "users")
 @Entity(name = "users")
@@ -60,6 +61,7 @@ public class AppUser implements UserDetails {
     }
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Mapeia UserRole para GrantedAuthority de forma mais granular
         // Exemplo: se UserRole.ADMIN -> ROLE_ADMIN, UserRole.PROFESSOR -> ROLE_PROFESSOR

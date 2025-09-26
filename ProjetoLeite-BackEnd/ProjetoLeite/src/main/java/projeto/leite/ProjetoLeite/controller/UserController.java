@@ -43,7 +43,7 @@ public class UserController {
     public ResponseEntity<AppUser> createUser(@RequestBody AppUser newUser) {
         // Chama o serviço para salvar o novo usuário
         // (O service já deve estar cuidando da criptografia da senha)
-        AppUser savedUser = service.save(newUser);
+        AppUser savedUser = service.create(newUser);
 
         // Esta é uma boa prática REST: retornar o status 201 Created
         // e a URL do novo recurso criado no cabeçalho 'Location'.
@@ -58,16 +58,9 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<AppUser> updateUser(@PathVariable UUID id, @RequestBody AppUser userDetails) {
-        return service.findById(id)
-                .map(existingUser -> {
-                    existingUser.setNome(userDetails.getNome());
-                    existingUser.setEmail(userDetails.getEmail());
-                    existingUser.setStatus(userDetails.getStatus()); // Permitir atualização de status aqui também
-                    existingUser.setRole(userDetails.getRole()); // Permitir atualização de role aqui também
-
-                    AppUser updatedUser = service.save(existingUser);
-                    return ResponseEntity.ok(updatedUser);
-                })
+        // Apenas delega a chamada para o método de atualização correto no serviço
+        return service.update(id, userDetails)
+                .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

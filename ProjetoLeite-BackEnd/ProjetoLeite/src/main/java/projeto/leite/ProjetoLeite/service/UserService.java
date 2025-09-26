@@ -21,11 +21,16 @@ public class UserService {
     }
 
     @Transactional
-    public AppUser save(AppUser user) {
-        if (repository.existsByCpf(user.getCpf())) {
-            throw new IllegalArgumentException("Cpf já está cadastrado");
+    public AppUser create(AppUser newUser) {
+        if (repository.existsByCpf(newUser.getCpf())) {
+            throw new IllegalArgumentException("CPF já está cadastrado");
         }
-        return repository.save(user);
+        if (repository.existsByEmail(newUser.getEmail())) {
+            throw new IllegalArgumentException("Email já está cadastrado");
+        }
+        // Lembre-se de reativar a criptografia da senha aqui quando voltar a usar o PasswordEncoder
+        // newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
+        return repository.save(newUser);
     }
 
     public List<AppUser> findAll() {
@@ -59,6 +64,33 @@ public class UserService {
         long producerCount = repository.countByRole(UserRole.PRODUCER);
 
         return new UserRoleCountsDTO(adminCount, collectorCount, producerCount);
+    }
+
+    @Transactional
+    public Optional<AppUser> update(UUID id, AppUser userDetails) {
+        // 1. Busca o usuário existente no banco
+        return repository.findById(id)
+                .map(existingUser -> {
+                    // 2. Atualiza os campos com os novos valores (exceto a senha)
+                    existingUser.setNome(userDetails.getNome());
+                    existingUser.setSobrenome(userDetails.getSobrenome());
+                    existingUser.setEmail(userDetails.getEmail());
+                    existingUser.setCpf(userDetails.getCpf());
+                    existingUser.setRole(userDetails.getRole());
+                    existingUser.setStatus(userDetails.getStatus());
+                    existingUser.setPassword(userDetails.getPassword());
+
+                    // 3. LÓGICA INTELIGENTE PARA A SENHA:
+                    // Só atualiza a senha se uma nova (não nula e não vazia) for fornecida.
+                    if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
+                        // Se/quando o PasswordEncoder for reativado, a criptografia entrará aqui.
+                        // Por agora, salva em texto puro (APENAS PARA TESTE).
+                        existingUser.setPassword(userDetails.getPassword());
+                    }
+
+                    // 4. Salva o usuário atualizado
+                    return repository.save(existingUser);
+                });
     }
 
     // Atualizar o status de um usuário

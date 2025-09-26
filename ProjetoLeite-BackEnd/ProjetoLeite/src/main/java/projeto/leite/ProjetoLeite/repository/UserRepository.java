@@ -13,6 +13,8 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<AppUser, UUID> {
     boolean existsByCpf(String Cpf);
 
+    boolean existsByEmail(String email);
+
     UserDetails findByEmail(String email);
 
     // Contar usuários por role
